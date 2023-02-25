@@ -6,8 +6,6 @@ from bs4 import BeautifulSoup
 import tkinter as tk
 
 
-
-#obtain article heading lines about given ticker via web scraping 
 def get_news(ticker):
     # Bloomberg
     url1 = f'https://www.bloomberg.com/quote/{ticker}:US'
@@ -36,8 +34,6 @@ def get_news(ticker):
     return [(title1, link1), (title2, link2), (title3, link3)]
 
 
-
-#plot given ticker using matplot lib 
 def plot_ticker(ticker):
     stock = yf.Ticker(ticker)
     history = stock.history(period="10y")
@@ -55,22 +51,20 @@ def plot_ticker(ticker):
     plt.show()    
 
 
-
-#run app with gui using tkinter
 def run_app():
     ticker = entry.get()
     news = get_news(ticker)
-    text.delete('1.0', tk.END)
+    news_text.delete('1.0', tk.END)
     for title, link in news:
-        text.insert(tk.END, f'{title}\n{link}\n\n')
-    
+        news_text.insert(tk.END, f'{title}\n{link}\n\n')
     plot_ticker(ticker)
+2  
     
 root = tk.Tk()
 root.title("Financial News Aggregator")
 
 # Set the window size
-root.geometry('600x600')
+root.geometry('800x600')
 
 # Create a frame for the input and button
 input_frame = tk.Frame(root)
@@ -92,7 +86,30 @@ news_frame.pack(pady=10)
 news_label = tk.Label(news_frame, text="Recent financial news:", font=('Arial', 16))
 news_label.pack()
 
-text = tk.Text(news_frame, height=10, width=80, font=('Arial', 12))
-text.pack(pady=10)
+news_text = tk.Text(news_frame, height=10, width=80, font=('Arial', 12))
+news_text.pack(pady=10)
+
+# Create a frame for the plot
+plot_frame = tk.Frame(root)
+plot_frame.pack(pady=10)
+
+plot_label = tk.Label(plot_frame, text="Price history:", font=('Arial', 16))
+plot_label.pack()
+
+# Create a canvas for the plot
+canvas = tk.Canvas(plot_frame, width=700, height=400)
+canvas.pack()
+
+# Create a scrollbar for the canvas
+scrollbar = tk.Scrollbar(plot_frame, orient=tk.HORIZONTAL, command=canvas.xview)
+scrollbar.pack(side=tk.BOTTOM, fill=tk.X)
+
+canvas.configure(xscrollcommand=scrollbar.set)
+canvas.bind('<Configure>', lambda e: canvas.configure(scrollregion=canvas.bbox('all')))
+
+# Create a frame inside the canvas to hold the plot
+plot_canvas = tk.Frame(canvas)
+
+canvas.create_window((0, 0), window=plot_canvas, anchor='nw')
 
 root.mainloop()
